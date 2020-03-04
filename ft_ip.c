@@ -27,8 +27,8 @@ __uint32_t		get_bitmask(__uint8_t mask)
 
 int		main(int ac, char **av)
 {
-	char	**bytes;
-	t_ip	ip;
+	__uint8_t	**bytes;
+	t_ip		ip;
 
 	bytes = ft_split(av[1], '.');
 	if (ac == 3)
