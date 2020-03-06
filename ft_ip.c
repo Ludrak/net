@@ -1,76 +1,78 @@
 
-#include "libft.h"
+#include "ft_ip.h"
 #include <stdio.h>
-#include <math.h>
 
-typedef struct	s_ip
+
+t_ip		parse_ip(char *ip_format)
 {
-	__uint8_t		bytes[4];
-	__uint32_t		bitmask;
-}				t_ip;
+	char	**bytes;
+	t_ip	ip;
+	int		i;
+	int		j;
 
-
-
-__uint32_t		get_bitmask(__uint8_t mask)
-{
-	__uint32_t	bitmask;
-
-	if (mask > 32)
-		return (0);
-	bitmask = 0;
-	while (mask)
-		bitmask |= (1 << (32 - mask--));
-	return (bitmask);
+	bytes = ft_split(ip_format, '.');
+	if (ft_strchr(bytes[3], '/'))
+	{
+		char	**tmp;
+		
+		tmp = ft_split(bytes[3], '/');
+		ip.bytes[3] = ft_atoi(tmp[0]);
+		ip.cidr = ft_atoi(tmp[1]);
+	}
+	ip.bytes[0] = ft_atoi(bytes[0]);
+	ip.bytes[1] = ft_atoi(bytes[1]);
+	ip.bytes[2] = ft_atoi(bytes[2]);
+	j = 0;
+	i = 4;
+	ip.address = 0;
+	while (i > 0)
+	{
+		ip.address |= ip.bytes[j] << ((i == 0) ? 1 : (i - 1) * 8);
+		i--;
+		j++;
+	}
+	ip.machines = get_machine_count(ip);
+	ip.subnet = get_subnet_mask(ip.cidr);
+	ip.network = get_network_address(ip);
+	ip.broadcast = get_broadcast_address(ip);
+	ip.first = get_first_machine(ip);
+	ip.last = get_last_machine (ip);
+	return(ip);
 }
 
-
-
-int		main(int ac, char **av)
+__uint32_t		get_subnet_mask(__uint8_t cidr)
 {
-	__uint8_t	**bytes;
-	t_ip		ip;
+	__uint32_t	subnet;
 
-	bytes = ft_split(av[1], '.');
-	if (ac == 3)
-	{
-		printf("\n* NET **********************************\nIP infomations for : %s / %s\n", av[1], av[2]);
+	if (cidr > 32)
+		return (0);
+	subnet = 0;
+	while (cidr)
+		subnet |= (1 << (32 - cidr--));
+	return (subnet);
+}
 
-		for (int i = 0; i < 4; i++)
-			ip.bytes[i]	= ft_atoi(bytes[i]);
-		
-		ip.bitmask = get_bitmask(ft_atoi(av[2]));
-		printf ("\nSubnet mask :		%d.%d.%d.%d\n\n", (ip.bitmask >> 24) & 0xFF, (ip.bitmask >> 16) & 0xFF, (ip.bitmask >> 8) & 0xFF, ip.bitmask & 0xFF);
+__uint32_t		get_network_address(t_ip ip)
+{
+	return (ip.address & ip.subnet);
+}
 
-		//	& operator btw ip and subnet mask
-		printf ("Network address :	%d.%d.%d.%d\n",
-		ip.bytes[0] & ((ip.bitmask >> 24) & 0xFF), 
-		ip.bytes[1] & ((ip.bitmask >> 16) & 0xFF), 
-		ip.bytes[2] & ((ip.bitmask >> 8) & 0xFF), 
-		ip.bytes[3] & ip.bitmask & 0xFF);
+__uint32_t		get_broadcast_address(t_ip ip)
+{
+	return (ip.network | ~ip.subnet);
+}
 
-		//	| operator btw net address and inverted subnet mask
-		printf ("Broadcast address :	%d.%d.%d.%d\n",
-		(ip.bytes[0] & ((ip.bitmask >> 24) & 0xFF)) | ((~ip.bitmask >> 24) & 0xFF), 
-		(ip.bytes[1] & ((ip.bitmask >> 16) & 0xFF)) | ((~ip.bitmask >> 16) & 0xFF), 
-		(ip.bytes[2] & ((ip.bitmask >> 8) & 0xFF)) | ((~ip.bitmask >> 8) & 0xFF), 
-		(ip.bytes[3] & ip.bitmask & 0xFF) | (~ip.bitmask & 0xFF));
+size_t			get_machine_count(t_ip ip)
+{
+	return (pow (2, 32 - ip.cidr) - 2);
+}
 
-		// 2 ^ 32 - mask - 2
-		printf ("Host :			%d\n\n", (int)pow(2, 32 - ft_atoi(av[2])) - 2);
+__uint32_t		get_first_machine (t_ip ip)
+{
+	return (ip.network + 1);
+}
 
-		// net address + 1 on first byte
-		printf ("First address :		%d.%d.%d.%d\n",
-		ip.bytes[0] & ((ip.bitmask >> 24) & 0xFF), 
-		ip.bytes[1] & ((ip.bitmask >> 16) & 0xFF), 
-		ip.bytes[2] & ((ip.bitmask >> 8) & 0xFF), 
-		(ip.bytes[3] & ip.bitmask & 0xFF) + 1);
-
-		// broadcast address - 1 on first byte
-		printf ("Last address :		%d.%d.%d.%d\n****************************************\n",
-		(ip.bytes[0] & ((ip.bitmask >> 24) & 0xFF)) | ((~ip.bitmask >> 24) & 0xFF), 
-		(ip.bytes[1] & ((ip.bitmask >> 16) & 0xFF)) | ((~ip.bitmask >> 16) & 0xFF), 
-		(ip.bytes[2] & ((ip.bitmask >> 8) & 0xFF)) | ((~ip.bitmask >> 8) & 0xFF), 
-		((ip.bytes[3] & ip.bitmask & 0xFF) | (~ip.bitmask & 0xFF)) - 1);
-	}
-	return (0);
+__uint32_t		get_last_machine (t_ip ip)
+{
+	return (ip.broadcast - 1);
 }

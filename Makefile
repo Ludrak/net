@@ -1,7 +1,8 @@
 
 NAME	= ft_ip
 
-SRCS	= ft_ip.c
+SRCS	= ft_ip.c	\
+		  main.c
 
 LIB		= libft/libft.a
 
@@ -17,7 +18,7 @@ $(OBJDIR) :
 	mkdir -p $(OBJDIR)
 
 $(OBJDIR)/%.o : %.c
-	gcc -c -o $@ -lm -Ilibft -Wall -Wextra -Werror $< 
+	gcc -c -o $@ -Ilibft -I. -Wall -Wextra -Werror $< 
 
 $(NAME) : $(LIB) $(OBJDIR) $(OBJS)
 	gcc -o $(NAME) -Wall -Wextra -Werror -lm $(OBJS) $(LIB)
