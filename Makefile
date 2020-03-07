@@ -18,7 +18,7 @@ $(OBJDIR) :
 	mkdir -p $(OBJDIR)
 
 $(OBJDIR)/%.o : %.c
-	gcc -c -o $@ -Ilibft -I. -Wall -Wextra -Werror $< 
+	gcc -c -o $@ -Ilibft -I. -Wall -Wextra -Werror $< -g3
 
 $(NAME) : $(LIB) $(OBJDIR) $(OBJS)
 	gcc -o $(NAME) -Wall -Wextra -Werror -lm $(OBJS) $(LIB)
