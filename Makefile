@@ -21,7 +21,7 @@ $(OBJDIR)/%.o : %.c
 	gcc -c -o $@ -Ilibft -I. -Wall -Wextra -Werror $< -g3
 
 $(NAME) : $(LIB) $(OBJDIR) $(OBJS)
-	gcc -o $(NAME) -Wall -Wextra -Werror -lm $(OBJS) $(LIB)
+	gcc -o $(NAME) -Wall -Wextra -Werror $(OBJS) -lm $(LIB)
 
 clean : 
 	rm -rf $(OBJDIR);
